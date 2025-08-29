@@ -103,7 +103,13 @@ class FashionCLIP:
     """
 
     def __init__(self, model_name, dataset: FCLIPDataset = None, normalize=True, approx=True, auth_token=None):
-        self.device = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
+        # Check for Apple Silicon GPU support
+        if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+            self.device = "mps"
+        elif torch.cuda.is_available():
+            self.device = "cuda"
+        else:
+            self.device = "cpu"
         self.model_name = model_name
         self.model, self.preprocess, self.model_hash = self._load_model(model_name, auth_token=auth_token)
         self.model = self.model.to(self.device)
